@@ -1,0 +1,12 @@
+.git
+.gitignore
+README.md
+.env.example
+.env.local
+.eslintrc.json
+.prettierrc.json
+CLAUDE.md
+node_modules
+.next
+*.md
+!README.md
