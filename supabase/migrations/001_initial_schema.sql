@@ -139,3 +139,44 @@ CREATE POLICY "Users can view routine steps"
       WHERE p.user_id = auth.uid()
     )
   );
+
+-- Coach messages table (AI coaching feedback)
+CREATE TABLE coach_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  program_id UUID NOT NULL REFERENCES programs(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+
+  -- Message content
+  user_message TEXT, -- User's question or request (optional)
+  coach_message TEXT NOT NULL, -- AI coach's response
+
+  -- Metadata
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for coach messages
+CREATE INDEX idx_coach_messages_program_id ON coach_messages(program_id);
+CREATE INDEX idx_coach_messages_user_id ON coach_messages(user_id);
+CREATE INDEX idx_coach_messages_created_at ON coach_messages(created_at DESC);
+
+-- Enable RLS for coach_messages
+ALTER TABLE coach_messages ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for coach_messages
+CREATE POLICY "Users can view coach messages for their programs"
+  ON coach_messages FOR SELECT
+  USING (
+    program_id IN (
+      SELECT id FROM programs WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can create coach messages for their programs"
+  ON coach_messages FOR INSERT
+  WITH CHECK (
+    program_id IN (
+      SELECT id FROM programs WHERE user_id = auth.uid()
+    )
+    AND user_id = auth.uid()
+  );

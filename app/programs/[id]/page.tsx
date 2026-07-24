@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft, CheckCircle, Clock, DollarSign, Zap } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, DollarSign, Zap, Send, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import type { Questionnaire, RoutineStep } from '@/src/lib/schemas';
 
@@ -26,6 +26,13 @@ interface RoutineData {
   expected_results_weeks: number;
 }
 
+interface CoachMessage {
+  id: string;
+  user_message?: string;
+  coach_message: string;
+  created_at: string;
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -33,9 +40,12 @@ interface PageProps {
 export default function ProgramPage({ params: paramsPromise }: PageProps) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [routine, setRoutine] = useState<RoutineData | null>(null);
+  const [coachMessages, setCoachMessages] = useState<CoachMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [coachLoading, setCoachLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [coachInput, setCoachInput] = useState<string>('');
   const [id, setId] = useState<string>('');
 
   useEffect(() => {
@@ -117,6 +127,74 @@ export default function ProgramPage({ params: paramsPromise }: PageProps) {
       setGenerating(false);
     }
   };
+
+  const fetchCoachMessages = async () => {
+    if (!id) return;
+
+    try {
+      const token = localStorage.getItem('sb-auth-token');
+      if (!token) return;
+
+      const response = await fetch(`/api/coach/messages?program_id=${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setCoachMessages(result.messages || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch coach messages:', err);
+    }
+  };
+
+  const handleCoachMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!data || coachLoading) return;
+
+    setCoachLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('sb-auth-token');
+      if (!token) {
+        throw new Error('Please log in');
+      }
+
+      const response = await fetch('/api/coach/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          program_id: id,
+          user_message: coachInput || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get coach feedback');
+      }
+
+      const result = await response.json();
+      setCoachMessages([result, ...coachMessages]);
+      setCoachInput('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get feedback');
+    } finally {
+      setCoachLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (routine) {
+      fetchCoachMessages();
+    }
+  }, [routine]);
 
   if (loading) {
     return (
@@ -457,6 +535,60 @@ export default function ProgramPage({ params: paramsPromise }: PageProps) {
                 </div>
               </div>
             )}
+
+            {/* Coach Section */}
+            <div className="border-t border-[var(--color-border)] pt-8">
+              <div className="flex items-center gap-3 mb-6">
+                <MessageSquare className="w-6 h-6 text-[var(--color-rose)]" />
+                <h2 className="text-2xl font-bold text-[var(--color-text)]">
+                  Your Coach
+                </h2>
+              </div>
+
+              {/* Coach Messages */}
+              {coachMessages.length > 0 && (
+                <div className="mb-6 space-y-3">
+                  {coachMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className="p-4 bg-[var(--color-rose)]/5 border border-[var(--color-rose)] rounded-lg"
+                    >
+                      {msg.user_message && (
+                        <p className="text-sm text-[var(--color-text-secondary)] mb-2 font-medium">
+                          You: {msg.user_message}
+                        </p>
+                      )}
+                      <p className="text-[var(--color-text)]">
+                        {msg.coach_message}
+                      </p>
+                      <p className="text-xs text-[var(--color-text-secondary)] mt-2">
+                        {new Date(msg.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Coach Input Form */}
+              <form onSubmit={handleCoachMessage} className="space-y-3">
+                <textarea
+                  value={coachInput}
+                  onChange={(e) => setCoachInput(e.target.value)}
+                  placeholder="Ask your coach anything about your routine or skin concerns..."
+                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-rose)] resize-none"
+                  rows={3}
+                  disabled={coachLoading}
+                />
+                <button
+                  type="submit"
+                  disabled={coachLoading || !coachInput.trim()}
+                  className="btn btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4" />
+                  {coachLoading ? 'Getting Feedback...' : 'Ask Your Coach'}
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </div>

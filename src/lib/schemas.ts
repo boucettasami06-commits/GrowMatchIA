@@ -144,3 +144,35 @@ export const GenerateRoutineResponseSchema = z.object({
 export type GenerateRoutineResponse = z.infer<
   typeof GenerateRoutineResponseSchema
 >;
+
+// Coach message schema
+export const CoachMessageSchema = z.object({
+  id: z.string().uuid(),
+  program_id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  user_message: z.string().optional(),
+  coach_message: z.string(),
+  created_at: z.string().datetime(),
+});
+export type CoachMessage = z.infer<typeof CoachMessageSchema>;
+
+// Coach feedback request
+export const CoachFeedbackRequestSchema = z.object({
+  program_id: z.string().uuid(),
+  user_message: z.string().optional(),
+});
+export type CoachFeedbackRequest = z.infer<
+  typeof CoachFeedbackRequestSchema
+>;
+
+// Coach feedback response
+export const CoachFeedbackResponseSchema = z.object({
+  message_id: z.string().uuid(),
+  program_id: z.string().uuid(),
+  user_message: z.string().optional(),
+  coach_message: z.string(),
+  created_at: z.string().datetime(),
+});
+export type CoachFeedbackResponse = z.infer<
+  typeof CoachFeedbackResponseSchema
+>;
