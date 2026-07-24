@@ -101,3 +101,46 @@ export const ErrorResponseSchema = z.object({
   details: z.record(z.string(), z.any()).optional(),
 });
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+
+// Routine step schema
+export const RoutineStepSchema = z.object({
+  step_type: z.enum(['morning', 'evening', 'bonus']),
+  step_number: z.number().int().positive(),
+  product_name: z.string().min(1),
+  product_category: z.string().optional(),
+  time_minutes: z.number().int().positive().optional(),
+  instructions: z.string().optional(),
+});
+export type RoutineStep = z.infer<typeof RoutineStepSchema>;
+
+// Routine schema
+export const RoutineSchema = z.object({
+  program_id: z.string().uuid(),
+  expected_results_weeks: z.number().int().positive().default(8),
+  total_time_morning_minutes: z.number().int().nonnegative(),
+  total_time_evening_minutes: z.number().int().nonnegative(),
+  steps: z.array(RoutineStepSchema),
+});
+export type Routine = z.infer<typeof RoutineSchema>;
+
+// Routine generation request
+export const GenerateRoutineRequestSchema = z.object({
+  program_id: z.string().uuid(),
+  questionnaire_id: z.string().uuid(),
+});
+export type GenerateRoutineRequest = z.infer<
+  typeof GenerateRoutineRequestSchema
+>;
+
+// Routine generation response
+export const GenerateRoutineResponseSchema = z.object({
+  routine_id: z.string().uuid(),
+  program_id: z.string().uuid(),
+  steps: z.array(RoutineStepSchema),
+  total_time_morning_minutes: z.number().int(),
+  total_time_evening_minutes: z.number().int(),
+  expected_results_weeks: z.number().int(),
+});
+export type GenerateRoutineResponse = z.infer<
+  typeof GenerateRoutineResponseSchema
+>;
