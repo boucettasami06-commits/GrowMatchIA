@@ -25,7 +25,7 @@ export default function Features() {
         <div className="text-center mb-16">
           <h2 className="text-[var(--color-text)] mb-4">Why GlowMatch?</h2>
           <p className="text-[var(--color-text-secondary)] text-lg max-w-2xl mx-auto">
-            We're not just another skincare app. We're your personal beauty coach.
+            We&apos;re not just another skincare app. We&apos;re your personal beauty coach.
           </p>
         </div>
 

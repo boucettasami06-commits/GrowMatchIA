@@ -45,7 +45,7 @@ export default function FAQ() {
         <div className="text-center mb-12">
           <h2 className="text-[var(--color-text)] mb-4">Frequently Asked Questions</h2>
           <p className="text-[var(--color-text-secondary)]">
-            Got questions? We've got answers.
+            Got questions? We&apos;ve got answers.
           </p>
         </div>
 

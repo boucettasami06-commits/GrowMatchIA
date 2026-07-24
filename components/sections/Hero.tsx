@@ -32,6 +32,7 @@ export default function Hero() {
         {/* Right: Image */}
         <div className="relative">
           <div className="w-full h-96 bg-[var(--color-rose-light)] rounded-2xl overflow-hidden flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=500&fit=crop"
               alt="Beauty skincare"
