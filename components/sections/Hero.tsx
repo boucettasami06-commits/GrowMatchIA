@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Hero() {
   return (
     <section className="section-light">
@@ -12,7 +14,7 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <button className="btn btn-primary">Start Free</button>
+            <Link href="/auth/signup" className="btn btn-primary">Start Free</Link>
             <button className="btn btn-outline">Learn More</button>
           </div>
 

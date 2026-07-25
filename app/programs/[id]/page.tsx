@@ -1,8 +1,12 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle, Clock, DollarSign, Zap, Send, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/src/hooks/useAuth';
 import type { Questionnaire, RoutineStep } from '@/src/lib/schemas';
 
 interface Program {
@@ -38,6 +42,8 @@ interface PageProps {
 }
 
 export default function ProgramPage({ params: paramsPromise }: PageProps) {
+  const router = useRouter();
+  const { isSignedIn, isLoading: authLoading } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [routine, setRoutine] = useState<RoutineData | null>(null);
   const [coachMessages, setCoachMessages] = useState<CoachMessage[]>([]);
@@ -49,12 +55,18 @@ export default function ProgramPage({ params: paramsPromise }: PageProps) {
   const [id, setId] = useState<string>('');
 
   useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!authLoading && !isSignedIn) {
+      router.push('/auth/login');
+      return;
+    }
+
     const initParams = async () => {
       const params = await paramsPromise;
       setId(params.id);
     };
     initParams();
-  }, [paramsPromise]);
+  }, [paramsPromise, authLoading, isSignedIn, router]);
 
   useEffect(() => {
     if (!id) return;
@@ -196,10 +208,18 @@ export default function ProgramPage({ params: paramsPromise }: PageProps) {
     }
   }, [routine]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-[var(--color-text-secondary)]">Loading your program...</p>
+        <p className="text-[var(--color-text-secondary)]">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-[var(--color-text-secondary)]">Redirecting to login...</p>
       </div>
     );
   }
