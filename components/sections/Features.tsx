@@ -1,3 +1,5 @@
+'use client';
+
 import { Zap, TrendingUp, MessageSquare } from 'lucide-react';
 
 const features = [

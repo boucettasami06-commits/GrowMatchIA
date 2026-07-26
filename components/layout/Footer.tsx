@@ -1,3 +1,5 @@
+'use client';
+
 export default function Footer() {
   return (
     <footer className="bg-[var(--color-text)] text-white border-t border-[var(--color-border)]">
